@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>VLESS Config Generator</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com" />
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+	<style>
+		:root {
+			--bg-main: #f8fafc;
+			--bg-card: #ffffff;
+			--bg-sidebar: #ffffff;
+			--bg-input: #f1f5f9;
+			--bg-input-focus: #ffffff;
+			--bg-hover: #f1f5f9;
+			--bg-active: #e2e8f0;
+
+			--text-primary: #0f172a;
+			--text-secondary: #475569;
+			--text-light: #ffffff;
+
+			--accent-primary: #0d9488;
+			--accent-secondary: #14b8a6;
+			--accent-primary-hover: #0f766e;
+			--accent-error: #ef4444;
+			--accent-warning: #f97316;
+			--accent-success: #10b981;
+
+			--border-main: #e2e8f0;
+			--border-focus: #14b8a6;
+			--shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+			--shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+			--shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+			
+			--sidebar-width: 250px;
+		}
+
+		*, *::before, *::after {
+			box-sizing: border-box;
+		}
+
+		::-webkit-scrollbar { width: 6px; height: 6px; }
+		::-webkit-scrollbar-track { background: transparent; }
+		::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 10px; }
+		::-webkit-scrollbar-thumb:hover { background-color: #94a3b8; }
+
+		html, body {
+			font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+			background-color: var(--bg-main);
+			color: var(--text-primary);
+			margin: 0;
+			padding: 0;
+			height: 100vh;
+			overflow: hidden; /* Prevent page scrolling on desktop */
+		}
+
+		/* --- Application Layout --- */
+		.app-container {
+			display: flex;
+			width: 100%;
+			height: 100%;
+			overflow: hidden;
+		}
+
+		/* --- Sidebar --- */
+		.sidebar {
+			width: var(--sidebar-width);
+			background-color: var(--bg-sidebar);
+			border-right: 1px solid var(--border-main);
+			display: flex;
+			flex-direction: column;
+			flex-shrink: 0;
+			transition: transform 0.3s ease;
+			z-index: 1000;
+			height: 100%;
+		}
+
+		.sidebar-header {
+			padding: 24px;
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			border-bottom: 1px solid var(--border-main);
+		}
+
+		.logo {
+			display: flex;
+			align-items: center;
+			gap: 12px;
+			text-decoration: none;
+			color: var(--text-primary);
+			font-weight: 700;
+			font-size: 1.1rem;
+			letter-spacing: -0.02em;
+		}
+
+		.logo svg {
+			width: 26px;
+			height: 26px;
+		}
+
+		.close-sidebar-btn {
+			display: none;
+			background: none;
+			border: none;
+			font-size: 1.5rem;
+			color: var(--text-secondary);
+			cursor: pointer;
+		}
+
+		.sidebar-nav {
+			flex: 1;
+			padding: 24px 16px;
+			display: flex;
+			flex-direction: column;
+			gap: 6px;
+			overflow-y: auto;
+		}
+
+		.nav-section-title {
+			font-size: 0.75rem;
+			text-transform: uppercase;
+			letter-spacing: 0.05em;
+			color: #94a3b8;
+			font-weight: 600;
+			margin-bottom: 8px;
+			padding-left: 12px;
+			margin-top: 16px;
+		}
+		.nav-section-title:first-child { margin-top: 0; }
+
+		.nav-item {
+			display: flex;
+			align-items: center;
+			gap: 12px;
+			padding: 10px 12px;
+			text-decoration: none;
+			color: var(--text-secondary);
+			font-weight: 500;
+			border-radius: 8px;
+			transition: all 0.2s ease;
+			font-size: 0.9rem;
+		}
+
+		.nav-item svg { width: 18px; height: 18px; opacity: 0.7; }
+		.nav-item:hover { background-color: var(--bg-hover); color: var(--text-primary); }
+		.nav-item:hover svg { opacity: 1; color: var(--accent-primary); }
+
+		.sidebar-footer {
+			padding: 20px 16px;
+			border-top: 1px solid var(--border-main);
+		}
+
+		.join-btn {
+			background-color: var(--text-primary);
+			color: var(--text-light);
+			text-decoration: none;
+			padding: 12px;
+			border-radius: 8px;
+			font-weight: 600;
+			font-size: 0.9rem;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			gap: 8px;
+			transition: background-color 0.2s;
+			width: 100%;
+		}
+
+		.join-btn:hover { background-color: #334155; }
+		.join-btn svg { width: 16px; height: 16px; }
+
+		/* --- Main Content Area --- */
+		.main-wrapper {
+			flex: 1;
+			display: flex;
+			flex-direction: column;
+			position: relative;
+			overflow: hidden;
+			background-image: repeating-linear-gradient(var(--border-main) 0 1px, transparent 1px 100%), repeating-linear-gradient(90deg, var(--border-main) 0 1px, transparent 1px 100%);
+			background-size: 40px 40px;
+			height: 100%;
+		}
+
+		.main-wrapper::before {
+			content: "";
+			position: absolute;
+			width: 800px;
+			height: 500px;
+			top: -100px;
+			left: 50%;
+			transform: translateX(-30%);
+			background: radial-gradient(circle, rgba(20, 184, 166, 0.08), transparent 70%);
+			filter: blur(80px);
+			z-index: 0;
+			pointer-events: none;
+		}
+
+		.mobile-topbar {
+			display: none;
+			padding: 16px 20px;
+			background: rgba(255, 255, 255, 0.9);
+			backdrop-filter: blur(10px);
+			border-bottom: 1px solid var(--border-main);
+			align-items: center;
+			justify-content: space-between;
+			position: sticky;
+			top: 0;
+			z-index: 50;
+		}
+
+		.hamburger {
+			background: none;
+			border: none;
+			cursor: pointer;
+			color: var(--text-primary);
+			padding: 4px;
+		}
+
+		.page-content {
+			padding: 24px 40px;
+			max-width: 1400px;
+			margin: 0 auto;
+			width: 100%;
+			height: 100%;
+			z-index: 1;
+			display: flex;
+			flex-direction: column;
+			gap: 24px;
+			overflow: hidden;
+		}
+
+		/* --- Page Header --- */
+		.page-header {
+			display: flex;
+			justify-content: space-between;
+			align-items: flex-end;
+			flex-wrap: wrap;
+			gap: 16px;
+			flex-shrink: 0;
+		}
+
+		.header-title h1 {
+			margin: 0 0 6px 0;
+			font-size: 1.6rem;
+			font-weight: 700;
+			color: var(--text-primary);
+			display: flex;
+			align-items: center;
+			gap: 12px;
+		}
+
+		.version-badge {
+			font-size: 0.75rem;
+			background: #ecfdf5;
+			color: var(--accent-primary);
+			padding: 4px 10px;
+			border-radius: 99px;
+			font-weight: 600;
+			border: 1px solid #a7f3d0;
+		}
+
+		.header-title p { margin: 0; color: var(--text-secondary); font-size: 0.9rem; }
+
+		/* Tab Controls */
+		.pill-tabs {
+			display: inline-flex;
+			background-color: var(--bg-input);
+			padding: 4px;
+			border-radius: 10px;
+			border: 1px solid var(--border-main);
+			flex-shrink: 0;
+		}
+
+		.pill-tab {
+			padding: 8px 16px;
+			background: transparent;
+			border: none;
+			border-radius: 6px;
+			font-weight: 500;
+			font-size: 0.85rem;
+			color: var(--text-secondary);
+			cursor: pointer;
+			transition: all 0.2s;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			gap: 6px;
+		}
+
+		.pill-tab:hover { color: var(--text-primary); }
+		.pill-tab.active { background: var(--bg-card); color: var(--text-primary); box-shadow: var(--shadow-sm); font-weight: 600; }
+		.pill-tab.active-version { background: #fefce8; color: #ca8a04; box-shadow: var(--shadow-sm); }
+
+		/* --- Dashboard Grid --- */
+		.dashboard-grid {
+			display: grid;
+			grid-template-columns: 1fr 1.2fr;
+			gap: 24px;
+			flex: 1;
+			min-height: 0; /* Critical for inner flex scrolling */
+		}
+
+		/* --- Panels --- */
+		.panel {
+			background: var(--bg-card);
+			border-radius: 16px;
+			padding: 24px;
+			border: 1px solid var(--border-main);
+			box-shadow: var(--shadow-sm);
+			display: flex;
+			flex-direction: column;
+			height: 100%;
+			overflow: hidden;
+			gap: 16px;
+		}
+
+		.panel-header { flex-shrink: 0; }
+		.panel-header h2 { margin: 0; font-size: 1.15rem; color: var(--text-primary); }
+		.panel-header p { margin: 4px 0 0 0; font-size: 0.85rem; color: var(--text-secondary); }
+
+		/* --- Form Elements --- */
+		.form-group {
+			display: flex;
+			flex-direction: column;
+			gap: 8px;
+			flex-shrink: 0;
+		}
+
+		.flex-group {
+			flex: 1;
+			display: flex;
+			flex-direction: column;
+			min-height: 0;
+		}
+
+		label {
+			font-size: 0.85rem;
+			color: var(--text-secondary);
+			font-weight: 600;
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+		}
+
+		.tutorial-link {
+			color: var(--accent-primary);
+			text-decoration: none;
+			font-size: 0.75rem;
+			font-weight: 500;
+			display: flex;
+			align-items: center;
+			gap: 4px;
+		}
+		.tutorial-link:hover { text-decoration: underline; }
+
+		input[type="text"], textarea {
+			width: 100%;
+			padding: 12px 14px;
+			background: var(--bg-input);
+			border: 1px solid var(--border-main);
+			border-radius: 8px;
+			color: var(--text-primary);
+			font-family: "Menlo", "Consolas", monospace;
+			font-size: 0.85rem;
+			transition: all 0.2s;
+			outline: none;
+		}
+
+		textarea {
+			resize: none;
+			flex: 1;
+			min-height: 80px; /* Prevent it from squishing to nothing */
+		}
+
+		input[type="text"]:focus, textarea:focus {
+			border-color: var(--border-focus);
+			background-color: var(--bg-input-focus);
+			box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.1);
+		}
+
+		.input-with-action { display: flex; gap: 10px; }
+		.input-with-action input { flex: 1; }
+
+		.action-btn-icon {
+			width: 42px;
+			flex-shrink: 0;
+			background: transparent;
+			border: 1px solid var(--border-main);
+			border-radius: 8px;
+			color: var(--text-secondary);
+			cursor: pointer;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			transition: all 0.2s;
+		}
+		.action-btn-icon:hover { background: var(--bg-hover); color: var(--text-primary); border-color: #cbd5e1; }
+
+		/* Mini Toolbar */
+		.mini-toolbar { display: flex; gap: 4px; }
+		.mini-btn {
+			background: var(--bg-card);
+			padding: 4px 8px;
+			border-radius: 6px;
+			cursor: pointer;
+			font-size: 0.7rem;
+			font-weight: 600;
+			border: 1px solid var(--border-main);
+			color: var(--text-secondary);
+			transition: 0.2s;
+		}
+		.mini-btn:hover { background: var(--bg-hover); border-color: #cbd5e1; color: var(--text-primary); }
+		.btn-clear { color: var(--accent-error); }
+		.btn-clear:hover { border-color: var(--accent-error); }
+
+		/* --- Dynamic Left Panel Content --- */
+		.dynamic-settings-wrapper {
+			flex: 1;
+			min-height: 0;
+			position: relative;
+			display: flex;
+			flex-direction: column;
+		}
+
+		.dynamic-state {
+			display: none;
+			flex-direction: column;
+			flex: 1;
+			min-height: 0;
+			animation: fadeIn 0.3s ease;
+		}
+
+		.dynamic-state.active { display: flex; }
+
+		/* Server Checkboxes */
+		#server-checkboxes {
+			display: grid;
+			grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+			gap: 10px;
+			overflow-y: auto;
+			padding-right: 6px;
+			align-content: start;
+		}
+
+		#server-checkboxes label {
+			display: flex;
+			align-items: center;
+			gap: 8px;
+			color: var(--text-secondary);
+			font-size: 0.8rem;
+			cursor: pointer;
+			background: var(--bg-card);
+			padding: 10px;
+			border-radius: 8px;
+			transition: all 0.2s;
+			border: 1px solid var(--border-main);
+			margin: 0;
+		}
+
+		#server-checkboxes label:hover { background: var(--bg-hover); border-color: #cbd5e1; }
+		#server-checkboxes label:has(input:checked) {
+			background: #ecfdf5;
+			color: #047857;
+			border-color: var(--accent-success);
+			font-weight: 600;
+		}
+		#server-checkboxes input[type="checkbox"] { display: none; }
+		#server-checkboxes img { width: 18px; height: 18px; border-radius: 50%; }
+
+		/* Custom Settings Box */
+		#custom-settings-form {
+			overflow-y: auto;
+			padding-right: 6px;
+			display: flex;
+			flex-direction: column;
+			gap: 16px;
+			padding-top: 2px;
+		}
+
+		/* State Box (1.0.2 Placeholder) */
+		.state-box {
+			flex: 1;
+			display: flex;
+			flex-direction: column;
+			justify-content: center;
+			align-items: center;
+			background: var(--bg-hover);
+			border: 1px dashed #cbd5e1;
+			border-radius: 12px;
+			text-align: center;
+			padding: 24px;
+			color: var(--text-secondary);
+		}
+		.state-box svg { width: 40px; height: 40px; color: var(--accent-primary); margin-bottom: 16px; opacity: 0.8; }
+		.state-box h3 { margin: 0 0 8px 0; color: var(--text-primary); font-size: 1rem; }
+		.state-box p { margin: 0; font-size: 0.85rem; line-height: 1.5; max-width: 80%; }
+
+		/* Generate Button */
+		.gen-btn {
+			flex-shrink: 0;
+			background-color: var(--accent-primary);
+			color: var(--text-light);
+			border: none;
+			padding: 14px;
+			border-radius: 10px;
+			cursor: pointer;
+			width: 100%;
+			font-weight: 600;
+			font-size: 0.95rem;
+			text-transform: uppercase;
+			letter-spacing: 0.05em;
+			transition: all 0.2s ease;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			gap: 10px;
+		}
+
+		.gen-btn:hover { background-color: var(--accent-primary-hover); transform: translateY(-1px); box-shadow: var(--shadow-md); }
+
+		/* Output Area */
+		#output-group {
+			display: none;
+			flex-direction: column;
+			flex: 1.5; /* Takes slightly more priority space when visible */
+			min-height: 120px;
+			animation: fadeIn 0.4s ease;
+		}
+
+		.output-header {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			margin-bottom: 8px;
+			padding: 10px 14px;
+			background: #ecfdf5;
+			border: 1px solid #a7f3d0;
+			border-radius: 8px;
+			flex-shrink: 0;
+		}
+
+		#config-count { color: var(--accent-success); font-size: 0.8rem; font-weight: 700; }
+		
+		.btn-copy {
+			background: var(--accent-success);
+			color: white;
+			border: none;
+			padding: 6px 12px;
+			border-radius: 6px;
+			font-size: 0.75rem;
+			font-weight: 600;
+			cursor: pointer;
+			transition: 0.2s;
+		}
+		.btn-copy:hover { opacity: 0.9; }
+
+		#result-area { border-color: #a7f3d0; background-color: #f0fdf4; }
+
+		/* Info Modal */
+		.info-icon {
+			display: inline-flex; align-items: center; justify-content: center;
+			width: 16px; height: 16px; border-radius: 50%;
+			background: var(--border-main); color: var(--text-secondary);
+			font-size: 10px; font-weight: bold; cursor: pointer; transition: 0.2s;
+		}
+		.info-icon:hover { background: #cbd5e1; color: var(--text-primary); }
+
+		.info-modal-overlay {
+			display: none; position: fixed; inset: 0;
+			background: rgba(15, 23, 42, 0.5); backdrop-filter: blur(4px);
+			z-index: 2000; justify-content: center; align-items: center; padding: 20px; opacity: 0;
+		}
+		.info-modal-overlay.active { display: flex; animation: fadeInModal 0.2s forwards; }
+
+		.info-modal-content {
+			background: var(--bg-card); border-radius: 16px; padding: 28px;
+			width: 100%; max-width: 440px; box-shadow: var(--shadow-lg);
+			position: relative; line-height: 1.6; font-size: 0.95rem; color: var(--text-secondary);
+		}
+
+		.info-modal-content h3 { color: var(--text-primary); margin-top: 0; border-bottom: 1px solid var(--border-main); padding-bottom: 16px; margin-bottom: 16px; }
+		.info-modal-close { position: absolute; top: 20px; right: 20px; background: none; border: none; font-size: 1.5rem; color: #94a3b8; cursor: pointer; }
+		.info-modal-close:hover { color: var(--text-primary); }
+
+		.error-border { border-color: var(--accent-error) !important; box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important; }
+		
+		.spinning { animation: rotate 1s linear infinite; }
+		@keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+		@keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+		@keyframes fadeInModal { to { opacity: 1; } }
+
+		/* Responsive Design for Mobile (Graceful fallback to scrolling) */
+		@media (max-width: 1024px) {
+			html, body, .app-container { height: auto; min-height: 100vh; overflow: auto; }
+			.main-wrapper { height: auto; min-height: 100vh; overflow: visible; }
+			.page-content { height: auto; overflow: visible; padding: 16px; gap: 16px; }
+			.dashboard-grid { grid-template-columns: 1fr; display: flex; flex-direction: column; height: auto; min-height: auto; }
+			.panel { height: auto; overflow: visible; min-height: 500px; }
+			.dynamic-settings-wrapper { min-height: 250px; }
+			textarea { min-height: 150px; flex: none; height: auto; }
+			#output-group { flex: none; height: auto; }
+			#result-area { min-height: 200px; }
+		}
+
+		@media (max-width: 768px) {
+			.sidebar { position: fixed; left: 0; top: 0; height: 100vh; transform: translateX(-100%); }
+			.sidebar.open { transform: translateX(0); }
+			.close-sidebar-btn { display: block; }
+			.mobile-topbar { display: flex; }
+			.pill-tabs { width: 100%; display: flex; }
+			.pill-tab { flex: 1; justify-content: center; }
+		}
+
+		.sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 900; }
+		.sidebar-overlay.active { display: block; }
+
+	</style>
+</head>
+<body>
+
+	<div class="app-container">
+		
+		<div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+		<aside class="sidebar" id="sidebar">
+			<div class="sidebar-header">
+				<a href="#" class="logo">
+					<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+						<circle cx="12" cy="12" r="10" stroke="#0D9488" stroke-width="2" />
+						<circle cx="12" cy="12" r="4" fill="#0D9488" />
+					</svg>
+					Config Gen
+				</a>
+				<button class="close-sidebar-btn" onclick="toggleSidebar()">×</button>
+			</div>
+
+			<nav class="sidebar-nav">
+				<div class="nav-section-title">External Links</div>
+				<a href="https://app.netlify.com" target="_blank" class="nav-item">
+					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+					Netlify Console
+				</a>
+				<a href="https://github.com" target="_blank" class="nav-item">
+					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
+					GitHub Repo
+				</a>
+			</nav>
+
+			<div class="sidebar-footer">
+				<a href="https://t.me/IR_NETLIFY" target="_blank" class="join-btn">
+					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+					Join Telegram
+				</a>
+			</div>
+		</aside>
+
+		<main class="main-wrapper">
+			<div class="mobile-topbar">
+				<div class="logo">
+					<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:24px; height:24px;">
+						<circle cx="12" cy="12" r="10" stroke="#0D9488" stroke-width="2" />
+						<circle cx="12" cy="12" r="4" fill="#0D9488" />
+					</svg>
+					Config Gen
+				</div>
+				<button class="hamburger" onclick="toggleSidebar()">
+					<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+				</button>
+			</div>
+
+			<div class="page-content">
+				<header class="page-header">
+					<div class="header-title">
+						<h1>VLESS Generator <span class="version-badge">V9.5.7</span></h1>
+						<p>Generate precise configurations natively without interruptions.</p>
+					</div>
+					<div class="pill-tabs">
+						<button class="pill-tab active-version" id="ver-103" onclick="setAppVersion('1.0.3')">Version 1.0.3</button>
+						<button class="pill-tab" id="ver-102" onclick="setAppVersion('1.0.2')">Version 1.0.2</button>
+					</div>
+				</header>
+
+				<div class="dashboard-grid">
+					
+					<!-- LEFT PANEL -->
+					<div class="panel">
+						<div class="panel-header">
+							<h2>Settings</h2>
+							<p>Choose routing modes and providers.</p>
+						</div>
+
+						<div class="form-group">
+							<label>
+								Routing Mode
+								<span class="info-icon" onclick="showInfo(event, 'ip_sni')" title="Info">?</span>
+							</label>
+							<div class="pill-tabs" id="netlify-options" style="width: 100%;">
+								<button class="pill-tab active" id="btn-shecan" style="flex: 1;" onclick="setNetlifyMode('shecan')">IP + SNI</button>
+								<button class="pill-tab" id="btn-normal" style="flex: 1;" onclick="setNetlifyMode('normal')">Direct SNI</button>
+							</div>
+						</div>
+
+						<div class="form-group">
+							<label>
+								Server Provider
+								<span class="info-icon" onclick="showInfo(event, 'parsa')" title="Info">?</span>
+							</label>
+							<div class="pill-tabs" id="netlify-config-type" style="width: 100%;">
+								<button class="pill-tab active" id="btn-default" style="flex: 1;" onclick="setConfigMode('default')">Donated</button>
+								<button class="pill-tab" id="btn-custom" style="flex: 1;" onclick="setConfigMode('custom')">Custom</button>
+							</div>
+						</div>
+
+						<!-- Dynamic Settings Wrapper -->
+						<div class="dynamic-settings-wrapper">
+							
+							<!-- State 1: Donated Servers List -->
+							<div id="state-donated-list" class="dynamic-state active">
+								<label style="margin-bottom: 8px;">Select Donated Servers</label>
+								<div id="server-checkboxes"></div>
+							</div>
+
+							<!-- State 2: Custom Server Inputs -->
+							<div id="state-custom" class="dynamic-state">
+								<div id="custom-settings-form">
+									<div class="form-group">
+										<label>Server Name</label>
+										<input id="custom-name" placeholder="e.g. My Private Server" type="text" />
+									</div>
+									<div class="form-group">
+										<label>Server Address</label>
+										<input id="custom-address" placeholder="sub.domain.com:444" type="text" />
+									</div>
+									<div class="form-group">
+										<label>User UUID</label>
+										<input id="custom-user" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" type="text" />
+									</div>
+									<div class="form-group">
+										<label>Path</label>
+										<input id="custom-path" placeholder="/your-path" type="text" />
+									</div>
+								</div>
+							</div>
+
+							<!-- State 3: V1.0.2 Auto Placeholder (Replaces empty space) -->
+							<div id="state-v102" class="dynamic-state">
+								<div class="state-box">
+									<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect><rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect><line x1="6" y1="6" x2="6.01" y2="6"></line><line x1="6" y1="18" x2="6.01" y2="18"></line></svg>
+									<h3>Auto-Routing Enabled</h3>
+									<p>In Version 1.0.2, routing is handled automatically by the primary Parsa server. Manual selection is disabled.</p>
+								</div>
+							</div>
+
+						</div>
+					</div>
+
+					<!-- RIGHT PANEL -->
+					<div class="panel">
+						<div class="panel-header">
+							<h2>Payload Data</h2>
+							<p>Enter the domains and IPs required for generation.</p>
+						</div>
+
+						<div class="form-group" id="host-form-group">
+							<label>
+								Netlify Domain
+								<a class="tutorial-link" href="https://t.me/IR_NETLIFY/7" target="_blank">
+									How to get? 
+									<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+								</a>
+							</label>
+							<div class="input-with-action">
+								<input id="main-host" oninput="this.value = this.value.replace(/[^a-zA-Z0-9./:-]/g, '')" placeholder="example.netlify.app" type="text" />
+								<button id="check-domain-btn" class="action-btn-icon" onclick="checkSingleDomain()" title="Check Status">
+									<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+								</button>
+							</div>
+						</div>
+
+						<div class="flex-group" id="sni-group">
+							<label style="margin-bottom: 6px;">
+								SNI List
+								<div class="mini-toolbar">
+									<button class="mini-btn" onclick="loadDefaultDomains()">All</button>
+									<button class="mini-btn" onclick="loadBestDomains()">Best</button>
+									<button class="mini-btn btn-clear" onclick="document.getElementById('domain-list').value = ''">Clear</button>
+								</div>
+							</label>
+							<textarea id="domain-list" placeholder="Enter SNI domains, one per line..."></textarea>
+						</div>
+
+						<div class="flex-group" id="ip-group">
+							<label style="margin-bottom: 6px;">
+								IP List
+								<div class="mini-toolbar">
+									<button class="mini-btn" onclick="loadDefaultIps()">All</button>
+									<button class="mini-btn" onclick="loadBestIps()">Best</button>
+									<button class="mini-btn btn-clear" onclick="document.getElementById('ip-list').value = ''">Clear</button>
+								</div>
+							</label>
+							<textarea id="ip-list" placeholder="Enter clean IPs, one per line..."></textarea>
+						</div>
+
+						<!-- Config Output (Reveals seamlessly) -->
+						<div id="output-group">
+							<div class="output-header">
+								<span id="config-count">✓ 0 Configs Generated</span>
+								<button class="btn-copy" id="copy-btn" onclick="copyToClipboard('result-area', 'copy-btn')">Copy & Save</button>
+							</div>
+							<textarea id="result-area" readonly></textarea>
+						</div>
+
+						<button class="gen-btn" onclick="generateConfigs()">
+							<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"></path></svg>
+							Generate
+						</button>
+					</div>
+				</div>
+			</div>
+		</main>
+	</div>
+
+	<!-- Info Modal -->
+	<div class="info-modal-overlay" id="infoModal" onclick="closeInfoModalOnOutside(event)">
+		<div class="info-modal-content">
+			<button class="info-modal-close" onclick="closeInfoModal()">×</button>
+			<h3 id="infoModalTitle">Title</h3>
+			<div id="infoModalBody">Content</div>
+		</div>
+	</div>
+
+	<script>
+		// --- Mobile Sidebar Toggle ---
+		function toggleSidebar() {
+			document.getElementById('sidebar').classList.toggle('open');
+			document.getElementById('sidebar-overlay').classList.toggle('active');
+		}
+
+		// --- Core Data ---
+		let appVersion = "1.0.3";
+		let netlifyMode = "shecan";
+		let configMode = "default";
+
+		const predefinedServers = {
+			server1: { name: "parsashonam", address: "netlify.parsashonam.sbs:444", path: "/p4r34m", user: "Telegram-Parsashonam", flag: "de.svg" },
+			server2: { name: "Xarheon", address: "https://xarheon.run.place", path: "/cdn2", user: "f9b57060-989a-4d6d-bc58-53d767242968", flag: "nl.svg" },
+			server3: { name: "BEHNAM", address: "https://s1.onesrv98.eu.cc:444", path: "/mine", user: "a5c04120-8f0d-4d52-8cdd-9ffff79a777d", flag: "se.svg" },
+			server4: { name: "Saman 1", address: "http://pa.sam4.lol:444", path: "/IR_NETLIFY", user: "%40IR_NETLIFY", flag: "fi.svg" },
+			server5: { name: "Alwinbalot", address: "https://solar.latnashobivojod.shop:444", path: "/balot", user: "b9fd3eb8-65ba-4850-9b39-25c94bfc162e", flag: "nl.svg" },
+			server6: { name: "Mostafa", address: "http://1.gymnation.ir:444", path: "/IR_NETLIFY", user: "%40IR_NETLIFY", flag: "fi.svg" },
+			server7: { name: "Farshid", address: "http://aa.websooj.site:444", path: "/IR_NETLIFY", user: "%40IR_NETLIFY", flag: "de.svg" },
+			server8: { name: "mohsen", address: "http://150.241.91.212:444", path: "/IR_NETLIFY", user: "%40IR_NETLIFY", flag: "de.svg" },
+			server9: { name: "Ali", address: "http://185.181.208.92:444", path: "/IR_NETLIFY", user: "%40IR_NETLIFY", flag: "tr.svg" },
+			server10:{ name: "shabgard", address: "http://cdn.lindasannp.com:444", path: "/IR_NETLIFY", user: "%40IR_NETLIFY", flag: "de.svg" },
+			server11:{ name: "Saman 2", address: "https://ppp.sam4.lol:30903", path: "/asekhi", user: "132f0ba3-ebbe-4153-84ff-63161b841ed8", flag: "us.svg" },
+			server12:{ name: "Pouya", address: "http://76.13.14.51:444", path: "/IR_NETLIFY", user: "%40IR_NETLIFY", flag: "de.svg" },
+			server13:{ name: "Masoud", address: "http://104.234.135.93:444", path: "/IR_NETLIFY", user: "%40IR_NETLIFY", flag: "ca.svg" },
+			server14:{ name: "Navid", address: "https://irnetlify.navtechz.com:444", path: "/IR_NETLIFY", user: "%40IR_NETLIFY", flag: "de.svg" },
+			server15:{ name: "AbolUp", address: "http://sub.abolup.online:444", path: "/IR_NETLIFY", user: "%40IR_NETLIFY", flag: "us.svg" },
+			server16:{ name: "Hossein", address: "http://str.fiathusen.homes:444", path: "/IR_NETLIFY", user: "598cbaec-00f6-4d84-8644-b35fdcec6904", flag: "de.svg" },
+			server17:{ name: "DarkSoul", address: "89.22.236.213:444", path: "/IR_NETLIFY", user: "%40IR_NETLIFY", flag: "se.svg" },
+			server18:{ name: "Meshke", address: "https://meshke.imissher.shop:444", path: "/meshke", user: "6ff4e855-cb98-47aa-901c-b787c898b6bb", flag: "de.svg" },
+			server19:{ name: "Rahgozar", address: "https://s1.rahgozar.tr:444", path: "/xhttp444", user: "c18d7142-3adc-491a-a0af-518a67d21c19", flag: "fi.svg" },
+			server20:{ name: "Dante", address: "212.74.39.210:444", path: "/IR_NETLIFY", user: "%40IR_NETLIFY", flag: "gb.svg" }
+		};
+
+		const payloadData = {
+			netlify_normal: { defaults: ["helm.sh", "keda.sh", "rook.io", "istio.io", "cilium.io", "vuejs.org", "nuxt.com", "vitejs.dev", "pnpm.io", "kubernetes.io"] },
+			netlify_shecan: {
+				ips: ["50.7.5.83", "50.7.87.2", "75.2.60.5", "144.76.1.88", "104.21.33.34", "188.114.98.0", "3.162.247.34", "95.216.69.37", "172.67.150.14", "35.157.26.135", "65.109.34.234", "94.130.70.160", "138.201.54.122"],
+				defaults: ["helm.sh", "keda.sh", "rook.io", "istio.io", "cilium.io", "vuejs.org", "nuxt.com", "vitejs.dev", "kubernetes.io"]
+			},
+			Best_domains: ["jobset.sigs.k8s.io", "kind.sigs.k8s.io", "vuejs.org", "cluster-api.sigs.k8s.io", "kubernetes.io"],
+			Best_ips: ["65.109.34.234", "94.130.70.160", "63.141.252.203", "50.7.5.83", "142.54.178.211", "94.130.33.41", "144.76.1.88"],
+		};
+
+		const infoTexts = {
+			direct_sni: { title: "Direct SNI", content: "In this mode, the SNI is used directly as the config address.<br><br><span style='color:var(--accent-warning)'>⚠️ It's recommended to use the IP + SNI mode for better connectivity.</span>" },
+			ip_sni: { title: "IP + SNI", content: "This mode increases the connection probability by combining healthy IPs with SNIs.<br><br><span style='color:var(--accent-warning)'>⚠️ This generates a large number of configs, so test them on a desktop client first.</span>" },
+			parsa: { title: "Server Selection", content: "Switch between community-donated servers or define your own custom server connection details." }
+		};
+
+		// --- Initialization ---
+		function renderServerCheckboxes() {
+			const container = document.getElementById('server-checkboxes');
+			container.innerHTML = '';
+			Object.keys(predefinedServers).forEach(key => {
+				const srv = predefinedServers[key];
+				const label = document.createElement('label');
+				label.innerHTML = `<input type="checkbox" name="server-choice" value="${key}" /><img src="https://hatscripts.github.io/circle-flags/flags/${srv.flag}" onerror="this.remove()" />${srv.name}`;
+				container.appendChild(label);
+			});
+		}
+
+		window.onload = () => {
+			renderServerCheckboxes();
+			setNetlifyMode("shecan");
+			setAppVersion("1.0.3");
+			setConfigMode("default");
+		};
+
+		// --- UI State Managers ---
+		function updateLeftPanelState() {
+			document.querySelectorAll('.dynamic-state').forEach(el => el.classList.remove('active'));
+
+			if (configMode === 'custom') {
+				document.getElementById('state-custom').classList.add('active');
+			} else {
+				if (appVersion === '1.0.2') {
+					document.getElementById('state-v102').classList.add('active');
+				} else {
+					document.getElementById('state-donated-list').classList.add('active');
+				}
+			}
+			hideOutputs();
+		}
+
+		function setAppVersion(v) {
+			appVersion = v;
+			document.getElementById("ver-103").classList.toggle("active-version", v === "1.0.3");
+			document.getElementById("ver-102").classList.toggle("active-version", v === "1.0.2");
+			updateLeftPanelState();
+		}
+
+		function setConfigMode(mode) {
+			configMode = mode;
+			document.querySelectorAll("#netlify-config-type .pill-tab").forEach(b => b.classList.remove("active"));
+			document.getElementById(`btn-${mode}`).classList.add("active");
+			updateLeftPanelState();
+		}
+
+		function setNetlifyMode(mode) {
+			netlifyMode = mode;
+			document.querySelectorAll("#netlify-options .pill-tab").forEach(b => b.classList.remove("active"));
+			document.getElementById(`btn-${mode}`).classList.add("active");
+			
+			// Cleanly toggle IP list box visibility with flex behavior
+			document.getElementById("ip-group").style.display = mode === "shecan" ? "flex" : "none";
+			hideOutputs();
+		}
+
+		function hideOutputs() {
+			const oc = document.getElementById("output-group");
+			if (oc) oc.style.display = "none";
+		}
+
+		// --- Input Loaders ---
+		function loadDefaultDomains() { setInputValue("domain-list", netlifyMode === "shecan" ? payloadData.netlify_shecan.defaults : payloadData.netlify_normal.defaults); }
+		function loadDefaultIps() { setInputValue("ip-list", payloadData.netlify_shecan.ips); }
+		function loadBestDomains() { setInputValue("domain-list", payloadData.Best_domains); }
+		function loadBestIps() { setInputValue("ip-list", payloadData.Best_ips); }
+		
+		function setInputValue(id, arr) {
+			const el = document.getElementById(id);
+			el.value = arr.join("\n");
+			el.classList.remove("error-border");
+		}
+
+		// --- Utilities ---
+		function showError(element) {
+			element.classList.add("error-border");
+			const removeError = () => {
+				element.classList.remove("error-border");
+				element.removeEventListener("input", removeError);
+			};
+			element.addEventListener("input", removeError);
+		}
+
+		// --- Generation Logic ---
+		function getInputs() {
+			let hasError = false;
+			const hostElement = document.getElementById("main-host");
+			const sniElement = document.getElementById("domain-list");
+			const ipElement = document.getElementById("ip-list");
+			
+			let host = hostElement.value.trim().replace(/^(https?:\/\/)?(www\.)?/, "").split("/")[0].replace(/[^a-zA-Z0-9.-]/g, "");
+			const sniInput = sniElement.value.trim();
+			const ipInput = ipElement.value.trim();
+
+			if (!host) { showError(hostElement); hasError = true; }
+			if (!sniInput) { showError(sniElement); hasError = true; }
+			
+			let ips = [];
+			if (netlifyMode === "shecan") {
+				if (!ipInput) { showError(ipElement); hasError = true; }
+				else { ips = ipInput.split("\n").map(i => i.trim().replace(/[^a-fA-F0-9.:]/g, "")).filter(Boolean); }
+			}
+			const domains = sniInput.split("\n").map(d => d.trim().replace(/[^a-zA-Z0-9.-]/g, "")).filter(Boolean);
+			
+			let selectedServers = [];
+			if (configMode === "custom") {
+				const customName = document.getElementById("custom-name").value.trim();
+				const customAddress = document.getElementById("custom-address").value.trim();
+				const customUser = document.getElementById("custom-user").value.trim();
+				let customPath = document.getElementById("custom-path").value.trim() || "/";
+
+				if (!customName) showError(document.getElementById("custom-name"));
+				if (!customAddress) showError(document.getElementById("custom-address"));
+				if (!customUser) showError(document.getElementById("custom-user"));
+
+				if (!customName || !customAddress || !customUser) return null;
+				
+				selectedServers.push({
+					name: customName, address: customAddress, user: customUser,
+					path: customPath.startsWith("/") ? customPath : "/" + customPath,
+				});
+			} else {
+				if (appVersion === "1.0.2") {
+					selectedServers.push(predefinedServers.server1);
+				} else {
+					const checkedBoxes = document.querySelectorAll('input[name="server-choice"]:checked');
+					if (checkedBoxes.length === 0) {
+						showError(document.getElementById("server-checkboxes"));
+						hasError = true;
+					} else {
+						checkedBoxes.forEach(cb => selectedServers.push(predefinedServers[cb.value]));
+					}
+				}
+			}
+			if (hasError) return null;
+			return { host, domains, ips, selectedServers };
+		}
+
+		function generateConfigs() {
+			const inputs = getInputs();
+			if (!inputs) return;
+			
+			const { host, domains, ips, selectedServers } = inputs;
+			let results = [];
+			
+			selectedServers.forEach(srv => {
+				const { user, path, address: serverAddress, name: serverName } = srv;
+				let extraData = { xPaddingBytes: "1-1", scMaxEachPostBytes: "1000000" };
+				if (appVersion === "1.0.3") extraData.headers = { "x-host": serverAddress };
+				
+				const encodedExtra = encodeURIComponent(JSON.stringify(extraData));
+				const encodedPath = encodeURIComponent(path);
+				
+				domains.forEach(sni => {
+					if (netlifyMode === "shecan") {
+						ips.forEach(ip => {
+							const remark = encodeURIComponent(`🌐 @IR_NETLIFY | ${sni} | ${ip} | ${serverName}`);
+							results.push(`vless://${user}@${ip}:443?encryption=none&security=tls&sni=${sni}&fp=chrome&alpn=h2%2Chttp%2F1.1&insecure=1&allowInsecure=1&type=xhttp&host=${host}&path=${encodedPath}&mode=auto&extra=${encodedExtra}#${remark}`);
+						});
+					} else {
+						const remark = encodeURIComponent(`🌐 @IR_NETLIFY | ${sni} | ${serverName}`);
+						results.push(`vless://${user}@${sni}:443?encryption=none&security=tls&sni=${sni}&fp=chrome&alpn=h2%2Chttp%2F1.1&insecure=1&allowInsecure=1&type=xhttp&host=${host}&path=${encodedPath}&mode=auto&extra=${encodedExtra}#${remark}`);
+					}
+				});
+			});
+			
+			document.getElementById("result-area").value = results.join("\n");
+			document.getElementById("output-group").style.display = "flex";
+			document.getElementById("config-count").innerText = `✓ ${results.length} Configs Generated`;
+		}
+
+		// --- Async Actions ---
+		async function checkSingleDomain() {
+			const hostElement = document.getElementById("main-host");
+			const checkBtn = document.getElementById("check-domain-btn");
+			const domain = hostElement.value.trim();
+			const SERVER_URL = "https://ir-netlify-checker.ir-netlify.workers.dev/";
+			
+			if (!domain) { showError(hostElement); return; }
+			
+			checkBtn.disabled = true;
+			checkBtn.innerHTML = "⏳";
+			checkBtn.classList.add("spinning");
+			hostElement.style.borderColor = 'var(--border-main)';
+			
+			try {
+				const response = await fetch(`${SERVER_URL}?domain=${domain}`);
+				const data = await response.json();
+				if (data.status === "Healthy") hostElement.style.borderColor = "var(--accent-success)";
+				else hostElement.style.borderColor = "var(--accent-error)";
+			} catch (error) {
+				hostElement.style.borderColor = "var(--accent-warning)";
+			} finally {
+				checkBtn.disabled = false;
+				checkBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>`;
+				checkBtn.classList.remove("spinning");
+			}
+		}
+
+		async function copyToClipboard(id, btnId) {
+			const text = document.getElementById(id).value;
+			const btn = document.getElementById(btnId);
+			if (!text) return;
+
+			try {
+				const blob = new Blob([text], { type: "text/plain" });
+				const url = URL.createObjectURL(blob);
+				const a = document.createElement("a");
+				a.href = url;
+				const ds = new Date();
+				a.download = `Configs_${ds.getFullYear()}${ds.getMonth()+1}${ds.getDate()}_${ds.getHours()}${ds.getMinutes()}.txt`;
+				document.body.appendChild(a);
+				a.click();
+				document.body.removeChild(a);
+				URL.revokeObjectURL(url);
+			} catch(e) {}
+			
+			let copySuccess = false;
+			try {
+				if (navigator.clipboard) {
+					await navigator.clipboard.writeText(text);
+					copySuccess = true;
+				} else {
+					const ta = document.createElement("textarea");
+					ta.value = text;
+					document.body.appendChild(ta);
+					ta.select();
+					copySuccess = document.execCommand("copy");
+					document.body.removeChild(ta);
+				}
+			} catch (err) {}
+			
+			btn.innerText = copySuccess ? "Copied ✓" : "Downloaded";
+			setTimeout(() => btn.innerText = "Copy & Save", 3000);
+		}
+
+		// --- Modals ---
+		function showInfo(event, key) {
+			event.stopPropagation();
+			const modal = document.getElementById("infoModal");
+			if (infoTexts[key]) {
+				document.getElementById("infoModalTitle").innerHTML = infoTexts[key].title;
+				document.getElementById("infoModalBody").innerHTML = infoTexts[key].content;
+				modal.classList.add("active");
+			}
+		}
+
+		function closeInfoModal() { document.getElementById("infoModal").classList.remove("active"); }
+		function closeInfoModalOnOutside(event) { if (event.target === document.getElementById("infoModal")) closeInfoModal(); }
+	</script>
+</body>
+</html>
