@@ -25,6 +25,10 @@ if [ "$1" == "--silent-start" ]; then
     exit 0
 fi
 
+if ! pgrep -x "xray" > /dev/null && [ -f "$CONFIG_FILE" ]; then
+    nohup xray run -c "$CONFIG_FILE" > "$LOG_DIR/xray.log" 2>&1 &
+fi
+
 draw_logo() {
     echo -e "${CYAN}${B}"
     echo "  ██████╗ ██████╗ ██████╗  █████╗ ██╗   ██╗"
@@ -95,7 +99,7 @@ generate_config() {
 }
 EOF
 
-    sudo systemctl stop xray 2>/dev/null
+    pkill -f "xray run" 2>/dev/null
     nohup xray run -c "$CONFIG_FILE" > "$LOG_DIR/xray.log" 2>&1 &
 }
 
@@ -111,15 +115,16 @@ first_run() {
     echo -e "${PURPLE}Welcome to the G2Ray Setup Guide!${NC}"
     echo -e "No configuration found. Please setup to continue.\n"
     echo -e "1) ${GREEN}Generate UUID & Create CodeLeafy Config${NC}"
-    echo -e "2) ${RED}Exit${NC}\n"
+    echo -e "2) ${RED}Exit to Terminal${NC}\n"
     read -p "Select an option [1-2]: " setup_choice
     
     if [ "$setup_choice" == "1" ]; then
         echo -e "\n${CYAN}Generating max-speed configuration...${NC}"
         generate_config
-        echo -e "${GREEN}Configuration built successfully!${NC}"
+        echo -e "${GREEN}Configuration built successfully! Loading main menu...${NC}"
         sleep 2
     else
+        clear
         exit 0
     fi
 }
@@ -127,7 +132,7 @@ first_run() {
 sudo chown -R vscode:vscode /var/lib/vnstat 2>/dev/null
 vnstatd -d 2>/dev/null
 
-if [ ! -f "$UUID_FILE" ]; then
+if [ ! -f "$CONFIG_FILE" ]; then
     first_run
 fi
 
@@ -142,7 +147,7 @@ while true; do
     echo -e "5)  ${B}Codespace Quota & Uptime${NC}"
     echo -e "6)  ${RED}View Server Location${NC}"
     echo -e "7)  ${CYAN}Enable AutoStart on Terminal${NC}"
-    echo -e "8)  ${NC}Exit${NC}\n"
+    echo -e "8)  ${NC}Exit to Terminal${NC}\n"
     
     read -p "Select an option [1-8]: " choice
     
@@ -217,7 +222,7 @@ while true; do
                 echo -e "${YELLOW}AutoStart is already enabled!${NC}"
             else
                 echo "bash /workspace/g2ray.sh" >> ~/.bashrc
-                echo -e "${GREEN}AutoStart enabled! G2Ray CLI will open on new terminals.${NC}"
+                echo -e "${GREEN}AutoStart enabled! G2Ray CLI will open on ALL new terminal tabs.${NC}"
             fi
             sleep 2
             ;;
