@@ -1,0 +1,23 @@
+{
+  "name": "G2Ray",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "forwardPorts": [8443],
+  "portsAttributes": {
+    "8443": {
+      "label": "G2Ray Port",
+      "visibility": "public",
+      "onAutoForward": "ignore"
+    }
+  },
+  "postStartCommand": "bash /workspace/g2ray.sh --silent-start",
+  "postAttachCommand": "bash /workspace/g2ray.sh",
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash"
+      }
+    }
+  }
+}
